@@ -51,7 +51,9 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         swig \
         unzip \
         xmlto \
-        zlib1g-dev && \
+        zlib1g-dev \
+        clang \
+        libclang-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -61,6 +63,11 @@ RUN wget https://bootstrap.pypa.io/get-pip.py -O - | python3
 # Install setuptools, pip, virtualenv, wheel and httpie for Python2
 RUN wget https://bootstrap.pypa.io/get-pip.py -O - | python
 RUN pip install virtualenv httpie
+
+# Install rustup and add the required toolchains
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
+        CARGO_HOME=/spksrc/.cargo/ sh -s -- -y && . /spksrc/.cargo/env && \
+        rustup target add armv7-unknown-linux-gnueabihf aarch64-unknown-linux-gnu
 
 # Volume pointing to spksrc sources
 VOLUME /spksrc
