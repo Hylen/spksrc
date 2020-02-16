@@ -1,6 +1,6 @@
 SPK_NAME = synocli-file
-SPK_VERS = 1.1
-SPK_REV = 3
+SPK_VERS = 2.1
+SPK_REV = 4
 SPK_ICON = src/synocli-file.png
 
 include ../../mk/spksrc.common.mk
@@ -16,18 +16,28 @@ OPTIONAL_DESC =
 # PPC_ARCHES except QorIQ
 ifneq ($(findstring $(ARCH), powerpc ppc824x ppc853x ppc854x),$(ARCH))
 DEPENDS += cross/rmlint
-OPTIONAL_DESC += , rmlint
+OPTIONAL_DESC += "rmlint, "
 endif
 
 ifneq ($(findstring $(ARCH), powerpc ppc824x ppc853x ppc854x $(ARM5_ARCHES)),$(ARCH))
 # to build rnm, GCC >= 4.8 is required, but not contained in older toolchains.
 DEPENDS += cross/rnm
-OPTIONAL_DESC += , rnm
+OPTIONAL_DESC += "rnm, "
 endif
 
-DESCRIPTION = "SynoCli File Tools provides a set of small command-line utilities: less, tree, ncdu, jdupes, rhash, mc \(midnight commander\), nano, file, detox$(OPTIONAL_DESC)."
+ifneq ($(findstring $(ARCH), powerpc ppc824x ppc853x ppc854x hi3535),$(ARCH))
+DEPENDS += cross/ripgrep
+OPTIONAL_DESC += "rg \(ripgrep\), "
+endif
+
+ifeq ($(OPTIONAL_DESC),)
+OPTIONAL_DESC = " "
+endif
+
+
+DESCRIPTION = "SynoCli File Tools provides a set of small command-line utilities: less, tree, ncdu, jdupes, rhash, mc \(midnight commander\), nano, file,$(OPTIONAL_DESC)detox."
 STARTABLE = no
-CHANGELOG = "1. Midnight-Commander: add sftp support; Fix subshell; fix mouse handling; fix mcedit, mcview and mcdiff; fix symlinks. </br>2. Fix rmlint not executable."
+CHANGELOG = "Add rg \(ripgrep\)."
 
 HOMEPAGE = https://github.com/SynoCommunity/spksrc/wiki/FAQ-SynoCliFile
 LICENSE  = Each tool is licensed under it\'s respective license.
@@ -42,6 +52,7 @@ SPK_COMMANDS += bin/file
 SPK_COMMANDS += bin/detox
 SPK_COMMANDS += bin/rmlint
 SPK_COMMANDS += bin/rnm
+SPK_COMMANDS += bin/rg
 
 SPK_COMMANDS += bin/rhash
 SPK_LINKS  = /usr/local/bin/ed2k-link:bin/rhash 
