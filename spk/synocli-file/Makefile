@@ -1,5 +1,5 @@
 SPK_NAME = synocli-file
-SPK_VERS = 2.1
+SPK_VERS = 2.0
 SPK_REV = 4
 SPK_ICON = src/synocli-file.png
 
@@ -16,26 +16,23 @@ OPTIONAL_DESC =
 # PPC_ARCHES except QorIQ
 ifneq ($(findstring $(ARCH), powerpc ppc824x ppc853x ppc854x),$(ARCH))
 DEPENDS += cross/rmlint
-OPTIONAL_DESC += "rmlint, "
+OPTIONAL_DESC := $(OPTIONAL_DESC)", rmlint"
 endif
 
 ifneq ($(findstring $(ARCH), powerpc ppc824x ppc853x ppc854x $(ARM5_ARCHES)),$(ARCH))
 # to build rnm, GCC >= 4.8 is required, but not contained in older toolchains.
 DEPENDS += cross/rnm
-OPTIONAL_DESC += "rnm, "
+OPTIONAL_DESC := $(OPTIONAL_DESC)", rnm"
 endif
 
 ifneq ($(findstring $(ARCH), powerpc ppc824x ppc853x ppc854x hi3535),$(ARCH))
 DEPENDS += cross/ripgrep
-OPTIONAL_DESC += "rg \(ripgrep\), "
-endif
-
-ifeq ($(OPTIONAL_DESC),)
-OPTIONAL_DESC = " "
+OPTIONAL_DESC := $(OPTIONAL_DESC)", rg \(ripgrep\)"
 endif
 
 
-DESCRIPTION = "SynoCli File Tools provides a set of small command-line utilities: less, tree, ncdu, jdupes, rhash, mc \(midnight commander\), nano, file,$(OPTIONAL_DESC)detox."
+
+DESCRIPTION = "SynoCli File Tools provides a set of small command-line utilities: less, tree, ncdu, jdupes, rhash, mc \(midnight commander\), nano, file, detox$(OPTIONAL_DESC)."
 STARTABLE = no
 CHANGELOG = "Add rg \(ripgrep\)."
 
