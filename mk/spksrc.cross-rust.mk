@@ -95,7 +95,9 @@ ENV += CARGO_HOME=/spksrc/distrib/cargo
 CARGO_TARGET = --target=$(RUST_TARGET)
 CARGO_PATH = --path $(RUST_SRC_DIR)
 CARGO_ROOT = --root $(STAGING_INSTALL_PREFIX)
-
+ifneq ($(strip $(CARGO_FEATURES),),)
+CARGO_FEATURES=--features $(RUST_FEATURES)
+endif
 
 ifeq ($(strip $(INSTALL_TARGET)),)
 INSTALL_TARGET = rust_build_and_install_target
@@ -104,7 +106,8 @@ endif
 # Default rust build and installation with cargo
 rust_build_and_install_target:
 	@echo "  ==> Cargo install rust package $(PKG_NAME)"
-	$(CARGO_ENV) cargo install $(CARGO_TARGET) $(CARGO_PATH) $(CARGO_ROOT)
+	$(CARGO_ENV) cargo install $(CARGO_TARGET) $(CARGO_PATH) $(CARGO_ROOT) \
+		$(CARGO_FEATURES)
 
 
 #####
