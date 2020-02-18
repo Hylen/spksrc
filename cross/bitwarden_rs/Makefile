@@ -8,7 +8,7 @@ PKG_DIR = $(PKG_NAME)-$(PKG_VERS)
 
 RUST_TOOLCHAIN=nightly
 
-#DEPENDS = cross/openssl
+DEPENDS = cross/openssl
 
 CARGO_BUILD_ARGS=--features mysql
 CARGO_ENV=OPENSSL_DIR=$(STAGING_INSTALL_PREFIX)
