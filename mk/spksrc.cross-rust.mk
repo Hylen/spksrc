@@ -32,8 +32,11 @@ endif
 
 ##### rust specific configurations
 
+# Use distrib folder as cargo download cache
+ENV += CARGO_HOME=/spksrc/distrib/cargo
+
 # configure is used to install rust targets
-CONFIGURE_TARGET = install_rust_target
+CONFIGURE_TARGET = configure_rust
 
 # skip compile_target if not used by module
 ifeq ($(strip $(COMPILE_TARGET)),)
@@ -78,6 +81,26 @@ install_rust_target:
 
 endif
 
+.PHONY : configure_rust
+configure_rust: install_rust_target install_rust_toolchain
+
+RUST_TOOLCHAIN?=stable
+ifneq ($(strip $(RUST_TOOLCHAIN)),stable)
+
+INSTALLED_RUST_TOOLCHAINS := $(shell rustup toolchain list)
+ifneq ($(findstring $(RUST_TOOLCHAIN),${INSTALLED_RUST_TOOLCHAINS}),$(RUST_TOOLCHAIN))
+install_rust_toolchain:
+	rustup toolchain install $(RUST_TOOLCHAIN)
+
+else
+install_rust_toolchain:
+	@echo "  ==> toolchain $(RUST_TOOLCHAIN) already installed" ;
+
+endif
+
+CARGO_TOOLCHAIN=+$(RUST_TOOLCHAIN)
+
+endif
 
 # set default RUST_SRC_DIR
 ifeq ($(strip $(RUST_SRC_DIR)),)
@@ -86,10 +109,10 @@ endif
 
 # Set linker environment variable
 RUST_LINKER_ENV=CARGO_TARGET_$(shell echo $(RUST_TARGET) | tr - _ | tr a-z A-Z)_LINKER
-CARGO_ENV=$(RUST_LINKER_ENV)=$(TC_PATH)$(TC_PREFIX)gcc
+CARGO_ENV+=$(RUST_LINKER_ENV)=$(TC_PATH)$(TC_PREFIX)gcc
 
-# Use distrib folder as cargo download cache
-ENV += CARGO_HOME=/spksrc/distrib/cargo
+# Set C cross compiler environment variable
+CARGO_ENV+=CC_$(shell echo $(RUST_TARGET) | tr - _)=$(TC_PATH)$(TC_PREFIX)gcc
 
 # Set the cargo parameters
 CARGO_TARGET = --target=$(RUST_TARGET)
@@ -106,8 +129,8 @@ endif
 # Default rust build and installation with cargo
 rust_build_and_install_target:
 	@echo "  ==> Cargo install rust package $(PKG_NAME)"
-	$(CARGO_ENV) cargo install $(CARGO_TARGET) $(CARGO_PATH) $(CARGO_ROOT) \
-		$(CARGO_FEATURES)
+	$(CARGO_ENV) cargo $(CARGO_TOOLCHAIN) install $(CARGO_TARGET) \
+	 	$(CARGO_PATH) $(CARGO_ROOT) $(CARGO_FEATURES)
 
 
 #####
