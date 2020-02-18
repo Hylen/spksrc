@@ -6,11 +6,11 @@ PKG_DIST_SITE = https://github.com/dani-garcia/bitwarden_rs/archive
 PKG_DIST_FILE = $(PKG_VERS).$(PKG_EXT)
 PKG_DIR = $(PKG_NAME)-$(PKG_VERS)
 
-RUST_FEATURES=mysql
 RUST_TOOLCHAIN=nightly
 
-DEPENDS = cross/openssl
+#DEPENDS = cross/openssl
 
+CARGO_BUILD_ARGS=--features mysql
 CARGO_ENV=OPENSSL_DIR=$(STAGING_INSTALL_PREFIX)
 
 # armv7 without hardfloat is not supported

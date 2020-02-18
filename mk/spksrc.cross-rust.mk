@@ -68,41 +68,37 @@ ifeq ($(RUST_TARGET),)
 $(error Arch $(ARCH) not supported)
 endif
 
-# install rust target on demand:
-INSTALLED_RUST_TARGETS := $(shell rustup target list --installed)
-ifneq ($(findstring $(RUST_TARGET),${INSTALLED_RUST_TARGETS}),$(RUST_TARGET))
-install_rust_target:
-	@echo "  ==> install rust target [$(RUST_TARGET)]" ; \
-	rustup target install $(RUST_TARGET) ;
+# Install rust toolchain on demand:
+RUST_TOOLCHAIN?=stable
+
+INSTALLED_RUST_TOOLCHAINS := $(shell rustup toolchain list)
+ifneq ($(findstring $(RUST_TOOLCHAIN),${INSTALLED_RUST_TOOLCHAINS}),$(RUST_TOOLCHAIN))
+install_rust_toolchain:
+	$(ENV) rustup toolchain install $(RUST_TOOLCHAIN)
 
 else
-install_rust_target:
+install_rust_toolchain:
+	@echo "  ==> rust toolchain [$(RUST_TOOLCHAIN)] already installed" ;
+
+endif
+
+# Install rust target on demand:
+INSTALLED_RUST_TARGETS := $(shell rustup +$(RUST_TOOLCHAIN) target list --installed)
+ifneq ($(findstring $(RUST_TARGET),${INSTALLED_RUST_TARGETS}),$(RUST_TARGET))
+install_rust_target: install_rust_toolchain
+	@echo "  ==> install rust target [$(RUST_TARGET)] for toolchain [$(RUST_TOOLCHAIN)]" ; \
+	$(ENV) rustup +$(RUST_TOOLCHAIN) target install $(RUST_TARGET) ;
+
+else
+install_rust_target: install_rust_toolchain
 	@echo "  ==> rust target [$(RUST_TARGET)] is already installed" ;
 
 endif
 
 .PHONY : configure_rust
-configure_rust: install_rust_target install_rust_toolchain
+configure_rust: install_rust_target
 
-RUST_TOOLCHAIN?=stable
-ifneq ($(strip $(RUST_TOOLCHAIN)),stable)
-
-INSTALLED_RUST_TOOLCHAINS := $(shell rustup toolchain list)
-ifneq ($(findstring $(RUST_TOOLCHAIN),${INSTALLED_RUST_TOOLCHAINS}),$(RUST_TOOLCHAIN))
-install_rust_toolchain:
-	rustup toolchain install $(RUST_TOOLCHAIN)
-
-else
-install_rust_toolchain:
-	@echo "  ==> toolchain $(RUST_TOOLCHAIN) already installed" ;
-
-endif
-
-CARGO_TOOLCHAIN=+$(RUST_TOOLCHAIN)
-
-endif
-
-# set default RUST_SRC_DIR
+# Set default RUST_SRC_DIR
 ifeq ($(strip $(RUST_SRC_DIR)),)
 RUST_SRC_DIR = $(WORK_DIR)/$(PKG_DIR)
 endif
@@ -115,12 +111,9 @@ CARGO_ENV+=$(RUST_LINKER_ENV)=$(TC_PATH)$(TC_PREFIX)gcc
 CARGO_ENV+=CC_$(shell echo $(RUST_TARGET) | tr - _)=$(TC_PATH)$(TC_PREFIX)gcc
 
 # Set the cargo parameters
-CARGO_TARGET = --target=$(RUST_TARGET)
-CARGO_PATH = --path $(RUST_SRC_DIR)
-CARGO_ROOT = --root $(STAGING_INSTALL_PREFIX)
-ifneq ($(strip $(CARGO_FEATURES),),)
-CARGO_FEATURES=--features $(RUST_FEATURES)
-endif
+CARGO_BUILD_ARGS += --target=$(RUST_TARGET)
+CARGO_BUILD_ARGS += --path $(RUST_SRC_DIR)
+CARGO_BUILD_ARGS += --root $(STAGING_INSTALL_PREFIX)
 
 ifeq ($(strip $(INSTALL_TARGET)),)
 INSTALL_TARGET = rust_build_and_install_target
@@ -129,9 +122,7 @@ endif
 # Default rust build and installation with cargo
 rust_build_and_install_target:
 	@echo "  ==> Cargo install rust package $(PKG_NAME)"
-	$(CARGO_ENV) cargo $(CARGO_TOOLCHAIN) install $(CARGO_TARGET) \
-	 	$(CARGO_PATH) $(CARGO_ROOT) $(CARGO_FEATURES)
-
+	$(CARGO_ENV) cargo +$(RUST_TOOLCHAIN) install $(CARGO_BUILD_ARGS)
 
 #####
 
