@@ -15,10 +15,12 @@ COMMENT = UnofficialBitwarden compatible server written in Rust.
 LICENSE = GPLv3
 
 RUST_TOOLCHAIN=nightly
-DEPENDS = cross/openssl
+DEPENDS = cross/openssl cross/mariadb-connector-c
 
 CARGO_BUILD_ARGS=--features mysql
-CARGO_ENV=OPENSSL_DIR=$(STAGING_INSTALL_PREFIX)
+
+CARGO_ENV  = OPENSSL_DIR=$(STAGING_INSTALL_PREFIX)
+CARGO_ENV += MYSQLCLIENT_LIB_DIR=$(STAGING_INSTALL_PREFIX)/lib/mariadb
 
 # armv7 without hardfloat is not supported
 UNSUPPORTED_ARCHS = hi3535

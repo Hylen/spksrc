@@ -33,7 +33,7 @@ endif
 ##### rust specific configurations
 
 # Use distrib folder as cargo download cache
-ENV += CARGO_HOME=/spksrc/distrib/cargo
+ENV += CARGO_HOME=/opt/cargo
 
 # configure is used to install rust targets
 CONFIGURE_TARGET = configure_rust
@@ -71,32 +71,10 @@ endif
 # Install rust toolchain on demand:
 RUST_TOOLCHAIN?=stable
 
-INSTALLED_RUST_TOOLCHAINS := $(shell rustup toolchain list)
-ifneq ($(findstring $(RUST_TOOLCHAIN),${INSTALLED_RUST_TOOLCHAINS}),$(RUST_TOOLCHAIN))
-install_rust_toolchain:
-	$(ENV) rustup toolchain install $(RUST_TOOLCHAIN)
-
-else
-install_rust_toolchain:
-	@echo "  ==> rust toolchain [$(RUST_TOOLCHAIN)] already installed" ;
-
-endif
-
-# Install rust target on demand:
-INSTALLED_RUST_TARGETS := $(shell rustup +$(RUST_TOOLCHAIN) target list --installed)
-ifneq ($(findstring $(RUST_TARGET),${INSTALLED_RUST_TARGETS}),$(RUST_TARGET))
-install_rust_target: install_rust_toolchain
-	@echo "  ==> install rust target [$(RUST_TARGET)] for toolchain [$(RUST_TOOLCHAIN)]" ; \
-	$(ENV) rustup +$(RUST_TOOLCHAIN) target install $(RUST_TARGET) ;
-
-else
-install_rust_target: install_rust_toolchain
-	@echo "  ==> rust target [$(RUST_TARGET)] is already installed" ;
-
-endif
-
 .PHONY : configure_rust
-configure_rust: install_rust_target
+configure_rust:
+	$(ENV) rustup toolchain install $(RUST_TOOLCHAIN) ;
+	$(ENV) rustup +$(RUST_TOOLCHAIN) target install $(RUST_TARGET) ;
 
 # Set default RUST_SRC_DIR
 ifeq ($(strip $(RUST_SRC_DIR)),)
