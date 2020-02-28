@@ -33,7 +33,7 @@ endif
 ##### rust specific configurations
 
 # Use distrib folder as cargo download cache
-ENV += CARGO_HOME=/opt/cargo
+RUSTUP_ENV += CARGO_HOME=/opt/cargo
 
 # configure is used to install rust targets
 CONFIGURE_TARGET = configure_rust
@@ -73,8 +73,8 @@ RUST_TOOLCHAIN?=stable
 
 .PHONY : configure_rust
 configure_rust:
-	$(ENV) rustup toolchain install $(RUST_TOOLCHAIN) ;
-	$(ENV) rustup +$(RUST_TOOLCHAIN) target install $(RUST_TARGET) ;
+	$(RUSTUP_ENV) rustup toolchain install $(RUST_TOOLCHAIN) ;
+	$(RUSTUP_ENV) rustup +$(RUST_TOOLCHAIN) target install $(RUST_TARGET) ;
 
 # Set default RUST_SRC_DIR
 ifeq ($(strip $(RUST_SRC_DIR)),)
@@ -96,6 +96,9 @@ CARGO_BUILD_ARGS += --root $(STAGING_INSTALL_PREFIX)
 ifeq ($(strip $(INSTALL_TARGET)),)
 INSTALL_TARGET = rust_build_and_install_target
 endif
+
+unexport CC
+unexport CFLAGS
 
 # Default rust build and installation with cargo
 rust_build_and_install_target:
