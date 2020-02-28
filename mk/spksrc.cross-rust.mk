@@ -82,11 +82,13 @@ RUST_SRC_DIR = $(WORK_DIR)/$(PKG_DIR)
 endif
 
 # Set linker environment variable
-RUST_LINKER_ENV=CARGO_TARGET_$(shell echo $(RUST_TARGET) | tr - _ | tr a-z A-Z)_LINKER
-CARGO_ENV+=$(RUST_LINKER_ENV)=$(TC_PATH)$(TC_PREFIX)gcc
+RUST_LINKER_ENV = CARGO_TARGET_$(shell echo $(RUST_TARGET) | tr - _ | tr a-z A-Z)_LINKER
+CARGO_ENV += $(RUST_LINKER_ENV)=$(TC_PATH)$(TC_PREFIX)gcc
 
 # Set C cross compiler environment variable
-CARGO_ENV+=CC_$(shell echo $(RUST_TARGET) | tr - _)=$(TC_PATH)$(TC_PREFIX)gcc
+CARGO_ENV += CC_$(shell echo $(RUST_TARGET) | tr - _)=$(TC_PATH)$(TC_PREFIX)gcc
+
+CARGO_ENV += CC=cc CFLAGS=""
 
 # Set the cargo parameters
 CARGO_BUILD_ARGS += --target=$(RUST_TARGET)
@@ -96,9 +98,6 @@ CARGO_BUILD_ARGS += --root $(STAGING_INSTALL_PREFIX)
 ifeq ($(strip $(INSTALL_TARGET)),)
 INSTALL_TARGET = rust_build_and_install_target
 endif
-
-unexport CC
-unexport CFLAGS
 
 # Default rust build and installation with cargo
 rust_build_and_install_target:
